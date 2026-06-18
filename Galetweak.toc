@@ -1,0 +1,8 @@
+## Interface: 120007
+## Title: Galetweak
+## Notes: A collection of small roleplay-oriented quality of life tweaks.
+## Author: Generated
+## Version: 1.0
+## Group: totalRP3
+## RequiredDeps: totalRP3
+Galetweak.xml
