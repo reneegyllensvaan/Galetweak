@@ -54,7 +54,7 @@ do
 		id = "ooc_emote_alert",
 		name = "OOC Emote Alert",
 		description = "Plays a warning sound if you send an emote while out of character.",
-		defaultEnabled = true,
+		defaultEnabled = false,
 		onEnable = function()
 			ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_EMOTE", OnChatMsg);
 			ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_TEXT_EMOTE", OnChatMsg);
