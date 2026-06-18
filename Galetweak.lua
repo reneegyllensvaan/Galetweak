@@ -1,69 +1,9 @@
 local addonName, Me = ...
 
-local Enums = AddOn_TotalRP3.Enums;
-
---*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
--- Tweak definitions
---*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+Me.tweaks = Me.tweaks or {};
 
 local function CONFIG_KEY(tweakID)
 	return "galetweak_" .. tweakID;
-end
-
-Me.tweaks = {};
-
--- Damage Meter Toggle
-do
-	local function UpdateDamageMeterCVar()
-		local isInCharacter = AddOn_TotalRP3.Player.GetCurrentUser():GetRoleplayStatus() ~= Enums.ROLEPLAY_STATUS.OUT_OF_CHARACTER;
-		C_CVar.SetCVar("damageMeterEnabled", isInCharacter and "0" or "1");
-	end
-
-	Me.tweaks[#Me.tweaks + 1] = {
-		id = "damage_meter",
-		name = "Damage Meter Toggle",
-		description = "Disables the damage meter while in character, and enables it while out of character.",
-		defaultEnabled = true,
-		onEnable = function()
-			UpdateDamageMeterCVar();
-			TRP3_API.RegisterCallback(TRP3_Addon, TRP3_Addon.Events.ROLEPLAY_STATUS_CHANGED, UpdateDamageMeterCVar);
-		end,
-		onDisable = function()
-			TRP3_API.UnregisterCallback(TRP3_Addon, TRP3_Addon.Events.ROLEPLAY_STATUS_CHANGED, UpdateDamageMeterCVar);
-		end,
-	};
-end
-
--- OOC Emote Alert
-do
-	local function OnChatMsg(self, event, msg, ...)
-		local playerName = ...;
-
-		if strsplit("-", playerName) ~= UnitName("player") then
-			return false;
-		end
-
-		if AddOn_TotalRP3.Player.GetCurrentUser():GetRoleplayStatus() == Enums.ROLEPLAY_STATUS.OUT_OF_CHARACTER then
-			PlaySound(SOUNDKIT.RAID_WARNING);
-		end
-
-		return false;
-	end
-
-	Me.tweaks[#Me.tweaks + 1] = {
-		id = "ooc_emote_alert",
-		name = "OOC Emote Alert",
-		description = "Plays a warning sound if you send an emote while out of character.",
-		defaultEnabled = false,
-		onEnable = function()
-			ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_EMOTE", OnChatMsg);
-			ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_TEXT_EMOTE", OnChatMsg);
-		end,
-		onDisable = function()
-			ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_EMOTE", OnChatMsg);
-			ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_TEXT_EMOTE", OnChatMsg);
-		end,
-	};
 end
 
 --*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -114,6 +54,20 @@ local function RegisterConfigPage()
 		};
 	end
 
+	elements[#elements + 1] = {
+		inherit = "TRP3_ConfigCheck",
+		title = "Show currently frame",
+		help = "Show or hide the currently frame. You can also hide the frame by setting your OOC flag.",
+		configKey = "CONFIG_TRP3CURRENTLYFRAME_SHOW",
+	};
+
+	elements[#elements + 1] = {
+		inherit = "TRP3_ConfigCheck",
+		title = "Show OOC editor in currently frame",
+		help = "Show an editor section for OOC information in the currently frame.",
+		configKey = "CONFIG_TRP3CURRENTLYFRAME_SHOW_OOC",
+	};
+
 	local pageTitle = C_AddOns.GetAddOnMetadata(addonName, "Title");
 
 	TRP3_API.configuration.registerConfigurationPage({
@@ -143,6 +97,9 @@ TRP3_API.module.registerModule({
 			end);
 			ApplyTweak(tweak);
 		end
+
+		TRP3_API.configuration.registerConfigKey("CONFIG_TRP3CURRENTLYFRAME_SHOW", true);
+		TRP3_API.configuration.registerConfigKey("CONFIG_TRP3CURRENTLYFRAME_SHOW_OOC", false);
 
 		RegisterConfigPage();
 	end,
