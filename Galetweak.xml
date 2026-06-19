@@ -84,6 +84,7 @@
 	<Script file="Tweaks/Locale.lua"/>
 	<Script file="Tweaks/DamageMeter.lua"/>
 	<Script file="Tweaks/OOCEmoteAlert.lua"/>
+	<Script file="Tweaks/RattaMode.lua"/>
 	<Script file="Tweaks/CurrentlyFrame.lua"/>
 	<Script file="Galetweak.lua"/>
 
