@@ -5,4 +5,5 @@
 ## Version: 1.0
 ## Group: totalRP3
 ## RequiredDeps: totalRP3
+## SavedVariables: GaletweakDB
 Galetweak.xml

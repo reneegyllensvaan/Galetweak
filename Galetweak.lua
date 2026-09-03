@@ -5,6 +5,18 @@ Me.tweaks = Me.tweaks or {};
 local function CONFIG_KEY(tweakID)
 	return "galetweak_" .. tweakID;
 end
+Me.CONFIG_KEY = CONFIG_KEY;
+
+-- Sub-setting config key for a tweak (e.g. galetweak_map_scan_alert_chat_frame).
+local function SUB_KEY(tweakID, subID)
+	return CONFIG_KEY(tweakID) .. "_" .. subID;
+end
+Me.SUB_KEY = SUB_KEY;
+
+-- Read a tweak sub-setting value at runtime.
+function Me.GetSubValue(tweakID, subID)
+	return TRP3_API.configuration.getValue(SUB_KEY(tweakID, subID));
+end
 
 --*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -- Tweak lifecycle helpers
@@ -52,6 +64,36 @@ local function RegisterConfigPage()
 			help = tweak.description,
 			configKey = CONFIG_KEY(tweak.id),
 		};
+
+		-- Sub-settings declared by a tweak. These are greyed out while the
+		-- parent tweak is disabled via dependentOnOptions.
+		if tweak.subConfig then
+			for _, sub in ipairs(tweak.subConfig) do
+				local element;
+				if sub.type == "dropdown" then
+					element = {
+						inherit = "TRP3_ConfigDropDown",
+						title = sub.name,
+						help = sub.help,
+						configKey = SUB_KEY(tweak.id, sub.id),
+						listContent = sub.listContent,
+						listCancel = true,
+						dependentOnOptions = { CONFIG_KEY(tweak.id) },
+					};
+				elseif sub.type == "check" then
+					element = {
+						inherit = "TRP3_ConfigCheck",
+						title = sub.name,
+						help = sub.help,
+						configKey = SUB_KEY(tweak.id, sub.id),
+						dependentOnOptions = { CONFIG_KEY(tweak.id) },
+					};
+				end
+				if element then
+					elements[#elements + 1] = element;
+				end
+			end
+		end
 	end
 
 	elements[#elements + 1] = {
@@ -90,11 +132,24 @@ TRP3_API.module.registerModule({
 	version = tonumber(C_AddOns.GetAddOnMetadata(addonName, "Version"):match("^%d+%.%d+")),
 	hotReload = true,
 	onStart = function()
+		-- Per-addon SavedVariables, used by tweaks that persist data to disk
+		-- (e.g. the map scan log). Flushed to WTF/.../SavedVariables/Galetweak.lua on logout.
+		GaletweakDB = GaletweakDB or {};
+
 		for _, tweak in ipairs(Me.tweaks) do
 			TRP3_API.configuration.registerConfigKey(CONFIG_KEY(tweak.id), tweak.defaultEnabled);
 			TRP3_API.configuration.registerHandler(CONFIG_KEY(tweak.id), function()
 				OnTweakConfigChanged(tweak);
 			end);
+
+			-- Register any sub-setting keys before applying the tweak so that
+			-- onEnable can read them safely.
+			if tweak.subConfig then
+				for _, sub in ipairs(tweak.subConfig) do
+					TRP3_API.configuration.registerConfigKey(SUB_KEY(tweak.id, sub.id), sub.default);
+				end
+			end
+
 			ApplyTweak(tweak);
 		end
 

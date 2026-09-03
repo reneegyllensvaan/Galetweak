@@ -85,6 +85,7 @@
 	<Script file="Tweaks/DamageMeter.lua"/>
 	<Script file="Tweaks/NoKardazshians.lua"/>
 	<Script file="Tweaks/OOCEmoteAlert.lua"/>
+	<Script file="Tweaks/MapScanAlert.lua"/>
 	<Script file="Tweaks/RattaMode.lua"/>
 	<Script file="Tweaks/CurrentlyFrame.lua"/>
 	<Script file="Galetweak.lua"/>
