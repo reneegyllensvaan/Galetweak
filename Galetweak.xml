@@ -9,23 +9,6 @@
 			</OnLoad>
 		</Scripts>
 		<Frames>
-			<Frame parentKey="caption" enableMouse="true" inherits="BackdropTemplate">
-				<Size x="150" y="20"/>
-				<Layers>
-					<Layer level="OVERLAY">
-						<FontString parentKey="label" name="$parentCaption" text="Currently" inherits="GameFontNormal" wordwrap="false">
-							<Anchors>
-								<Anchor point="CENTER" y="1" />
-							</Anchors>
-							<Color r="0.95" g="0.95" b="0.95"/>
-						</FontString>
-					</Layer>
-				</Layers>
-				<Anchors>
-					<Anchor point="TOP" x="0" y="10"/>
-				</Anchors>
-			</Frame>
-
 			<EditBox name="$parentText" parentKey="text" multiLine="true" enableMouse="false" autoFocus="false">
 				<Anchors>
 					<Anchor point="TOP" x="0" y="-14"/>
