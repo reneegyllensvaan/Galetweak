@@ -12,6 +12,7 @@ Me.tweaks = Me.tweaks or {};
 --     left disabled); otherwise the built-in damageMeterEnabled CVar is toggled.
 --   * Eavesdropper: shown while IC (so you can overhear nearby roleplay), hidden
 --     while OOC.
+--   * Listener (snooper window): shown while IC, hidden while OOC.
 --
 -- The config key id is kept as "damage_meter" for SavedVariables continuity,
 -- even though the tweak now covers more than the damage meter.
@@ -117,6 +118,33 @@ do
 	end
 
 	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+	-- Listener (snooper window)
+	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+	local function IsListenerAvailable()
+		return type(ListenerAddon) == "table"
+			and type(ListenerAddon.frames) == "table"
+			and type(ListenerAddon.frames[2]) == "table"
+			and type(ListenerAddon.frames[2].Open) == "function"
+			and type(ListenerAddon.frames[2].Close) == "function";
+	end
+
+	local function SetListenerSnooperVisible(visible)
+		if not IsListenerAvailable() then
+			return;
+		end
+
+		-- Listener's Open()/Close() persist its own charopts.hidden flag and run
+		-- UpdateShown(), so they behave exactly like its own show/hide UI.
+		local snooper = ListenerAddon.frames[2];
+		if visible then
+			snooper:Open();
+		else
+			snooper:Close();
+		end
+	end
+
+	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 	-- Apply the UI state for the current RP status
 	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
@@ -124,13 +152,14 @@ do
 		local isInCharacter = IsInCharacter();
 
 		if isInCharacter then
-			-- IC: no damage meter, but show Eavesdropper to overhear roleplay.
+			-- IC: no damage meter, but show the RP eavesdropping windows.
 			HideDetails();
 			SetBuiltInMeterEnabled(false);
 			SetEavesdropperVisible(true);
+			SetListenerSnooperVisible(true);
 		else
 			-- OOC: bring the damage meter back (Details if available, otherwise
-			-- Blizzard's built-in meter), and hide Eavesdropper.
+			-- Blizzard's built-in meter), and hide the RP eavesdropping windows.
 			if IsDetailsAvailable() then
 				ShowDetails();
 				SetBuiltInMeterEnabled(false);
@@ -138,20 +167,21 @@ do
 				SetBuiltInMeterEnabled(true);
 			end
 			SetEavesdropperVisible(false);
+			SetListenerSnooperVisible(false);
 		end
 	end
 
 	Me.tweaks[#Me.tweaks + 1] = {
 		id = "damage_meter",
 		name = "IC Mode UI Toggle",
-		description = "Hides the damage meter (Details!, or Blizzard's built-in meter) while in character, and hides Eavesdropper while out of character.",
+		description = "Hides the damage meter while in character and shows Eavesdropper/Listener; shows the damage meter and hides Eavesdropper/Listener while out of character.",
 		defaultEnabled = true,
 		onEnable = function()
 			ApplyUiState();
 
-			-- Details and Eavesdropper can finish initializing after TRP3 starts
-			-- galetweak, so re-apply once shortly after login to catch any frames
-			-- that weren't ready yet.
+			-- Details, Eavesdropper, and Listener can finish initializing after
+			-- TRP3 starts galetweak, so re-apply once shortly after login to
+			-- catch any frames that weren't ready yet.
 			C_Timer.After(1.0, function()
 				if TRP3_API.configuration.getValue(Me.CONFIG_KEY("damage_meter")) then
 					ApplyUiState();
